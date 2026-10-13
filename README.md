@@ -28,17 +28,15 @@ The state machine defines which transitions are allowed and rejects invalid tran
 
 ## Project Structure
 
-```text
 taskflow/
-├── taskflow/
-│   ├── __init__.py
-│   ├── errors.py
-│   └── states.py
-├── tests/
-│   └── test_states.py
-├── .gitignore
-└── README.md
-```
+    __init__.py
+    errors.py
+    job.py
+    states.py
+
+tests/
+    test_job.py
+    test_states.py
 
 ## Requirements
 

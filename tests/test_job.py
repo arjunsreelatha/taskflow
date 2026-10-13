@@ -6,7 +6,7 @@ from taskflow.job import Job, create_job
 from taskflow.states import JobStatus
 
 
-def test_create_Job():
+def test_create_job():
     job_id = "job-001"
     task = "send_email"
 
