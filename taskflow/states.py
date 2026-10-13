@@ -42,6 +42,6 @@ TERMINAL = frozenset({
 def can_transition(current: JobStatus, new:JobStatus) -> bool:
     return new in ALLOWED[current]
 
-def assert_transistion(current:JobStatus, new:JobStatus) -> None:
+def assert_transition(current:JobStatus, new:JobStatus) -> None:
     if not can_transition(current,new):
         raise InvalidTransition(f"cannot move job from {current.value} to {new.value}")
