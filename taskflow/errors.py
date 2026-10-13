@@ -6,7 +6,7 @@ class TaskFlowError(Exception):
 class JobNotFound(TaskFlowError):
     pass
 
-class InvalidTransaction(TaskFlowError):
+class InvalidTransition(TaskFlowError):
   """The requested state change is not allowed."""
 
 class IdempotencyConflict(TaskFlowError):
