@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from pydantic import ValidationError
 
@@ -5,7 +7,7 @@ from taskflow.job import Job, create_job
 from taskflow.states import JobStatus
 
 
-def test_create_Job():
+def test_create_job():
     job_id = "job-001"
     task = "send_email"
 
@@ -39,3 +41,26 @@ def test_Job_rejects_negative_retries():
 def test_Job_rejects_whitespace_only_task_name():
     with pytest.raises(ValidationError):
         Job(id="job-004", task_name="   ")
+
+
+def test_job_serializes_to_json():
+    job = Job(id="job-001", task_name="send_email")
+
+    data = json.loads(job.model_dump_json())
+
+    assert data == {
+        "id": "job-001",
+        "task_name": "send_email",
+        "status": "pending",
+        "retries": 0,
+    }
+
+
+def test_job_json_round_trip_preserves_enum():
+    job = Job(id="job-001", task_name="send_email")
+
+    restored = Job.model_validate_json(job.model_dump_json())
+
+    assert restored == job
+    assert restored.status is JobStatus.PENDING
+    assert isinstance(restored.status, JobStatus)
