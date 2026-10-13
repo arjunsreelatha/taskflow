@@ -1,8 +1,9 @@
 import pytest
-from taskflow.job import Job, create_job
-
-from taskflow.states import JobStatus
 from pydantic import ValidationError
+
+from taskflow.job import Job, create_job
+from taskflow.states import JobStatus
+
 
 def test_create_Job():
     job_id = "job-001"
@@ -10,18 +11,16 @@ def test_create_Job():
 
     job = create_job(job_id, task)
 
-    
     assert job.id == job_id
     assert job.task_name == task
     assert job.status == JobStatus.PENDING
     assert job.retries == 0
 
 
-from pydantic import ValidationError
-
 def test_create_job_rejects_empty_task_name():
     with pytest.raises(ValidationError):
         create_job("job-002", "")
+
 
 def test_Job_rejects_empty_id():
     with pytest.raises(ValidationError):
@@ -35,6 +34,8 @@ def test_Job_rejects_negative_retries():
             task_name="send_email",
             retries=-1,
         )
+
+
 def test_Job_rejects_whitespace_only_task_name():
     with pytest.raises(ValidationError):
-        Job(id="job-004", task_name="   ")        
+        Job(id="job-004", task_name="   ")

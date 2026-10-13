@@ -1,14 +1,17 @@
-'''Domain exceptions for TaskFlow'''
+"""Domain exceptions for TaskFlow"""
 
 
 class TaskFlowError(Exception):
- """Base class for all TaskFlow domain errors"""
+    """Base class for all TaskFlow domain errors"""
+
+
 class JobNotFound(TaskFlowError):
     pass
 
+
 class InvalidTransition(TaskFlowError):
-  """The requested state change is not allowed."""
+    """The requested state change is not allowed."""
+
 
 class IdempotencyConflict(TaskFlowError):
-
- """an idempotency key was reused with a  differnt request body"""
+    """an idempotency key was reused with a  differnt request body"""

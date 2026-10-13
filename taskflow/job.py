@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
+
 from taskflow.states import JobStatus
 
 
@@ -12,9 +13,7 @@ class Job(BaseModel):
     @classmethod
     def validate_task_name(cls, value: str) -> str:
         if not value.strip():
-            raise ValueError(
-                "task_name cannot be empty or whitespace"
-            )
+            raise ValueError("task_name cannot be empty or whitespace")
         return value
 
 
