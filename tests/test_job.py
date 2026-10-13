@@ -1,5 +1,6 @@
 import pytest
 from pydantic import ValidationError
+import json
 
 from taskflow.errors import InvalidTransition
 from taskflow.job import Job, create_job
@@ -66,3 +67,26 @@ def test_direct_status_assignment_rejected():
 
     with pytest.raises(InvalidTransition):
         job.status = JobStatus.COMPLETED
+
+
+def test_job_serlializes_to_json():
+    job = Job(id="job-001", task_name="send_email")
+
+    data = json.loads(job.model_dump_json())
+
+    assert data == {
+        "id": "job-001",
+        "task_name": "send_email",
+        "status": "pending",
+        "retries": 0,
+    }
+
+
+def test_job_json_round_trip_preserves_enum():
+    job = Job(id="job-001", task_name="send_email")
+
+    restored = Job.model_validate_json(job.model_dump_json())
+
+    assert restored == job
+    assert restored.status is JobStatus.PENDING
+    assert isinstance(restored.status, JobStatus)
