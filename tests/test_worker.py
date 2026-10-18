@@ -102,6 +102,7 @@ def test_permanent_error_skips_retries():
     assert attempts == 1
     assert job.status == JobStatus.DEAD
 
+
 def test_permanent_error_after_retry():
     job = Job(id="job-009", task_name="process_file", max_attempts=3)
     attempts = 0

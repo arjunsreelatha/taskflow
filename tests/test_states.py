@@ -93,5 +93,6 @@ def test_allowed_transitions_are_correct():
     for status, expected_next_states in expected.items():
         assert ALLOWED[status] == expected_next_states
 
+
 def test_only_pending_jobs_are_claimable():
     assert CLAIMABLE == (JobStatus.PENDING,)

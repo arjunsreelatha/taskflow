@@ -33,5 +33,3 @@ def execute_job(job: Job, task: Callable[[], T]) -> T:
         else:
             job.transition_to(JobStatus.COMPLETED)
             return result
-
-
