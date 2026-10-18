@@ -14,4 +14,4 @@ class InvalidTransition(TaskFlowError):
 
 
 class IdempotencyConflict(TaskFlowError):
-    """an idempotency key was reused with a  differnt request body"""
+    """an idempotency key was reused with a  different request body"""

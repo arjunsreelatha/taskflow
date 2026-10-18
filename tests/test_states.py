@@ -54,9 +54,7 @@ def test_all_allowed_transitions():
     ]
 
     for current, new in allowed_transitions:
-        assert can_transition(current, new), (
-            f"{current.value} -> {new.value} should be allowed"
-        )
+        assert can_transition(current, new), f"{current.value} -> {new.value} should be allowed"
 
 
 def test_forbidden_transitions():

@@ -16,18 +16,12 @@ class Job(BaseModel):
     def validate_task_name(cls, value: str) -> str:
         value = value.strip()
         if not value:
-            raise ValueError(
-                "task_name cannot be empty or whitespace"
-            )
+            raise ValueError("task_name cannot be empty or whitespace")
         return value
 
     def __setattr__(self, name: str, value) -> None:
         if name == "status" and "status" in self.__dict__:
-            new_status = (
-                value
-                if isinstance(value, JobStatus)
-                else JobStatus(value)
-            )
+            new_status = value if isinstance(value, JobStatus) else JobStatus(value)
             assert_transition(self.status, new_status)
             value = new_status
 

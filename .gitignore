@@ -12,3 +12,7 @@ venv/
 
 # Environment variables and secrets
 .env
+*.egg-info/
+__pycache__/
+.pytest_cache/
+.ruff_cache/

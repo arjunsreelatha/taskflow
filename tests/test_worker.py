@@ -6,7 +6,7 @@ from taskflow.worker import execute_job
 
 
 def test_execute_job_success():
-    job = Job(id=" job-001", task_name="send_email")
+    job = Job(id="job-001", task_name="send_email")
 
     def task():
         return "Email sent"
