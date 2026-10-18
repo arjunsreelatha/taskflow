@@ -9,7 +9,7 @@ T = TypeVar("T")
 
 def execute_job(job: Job, task: Callable[[], T]) -> T:
     """Execute a task and retry up to two times."""
-    max_attempts = 3
+    max_attempts = job.max_attempts
 
     for attempt in range(max_attempts):
         job.transition_to(JobStatus.RUNNING)

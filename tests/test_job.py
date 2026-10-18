@@ -78,6 +78,7 @@ def test_job_serializes_to_json():
         "task_name": "send_email",
         "status": "pending",
         "retries": 0,
+        "max_attempts": 3,
     }
 
 

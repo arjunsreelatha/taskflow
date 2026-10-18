@@ -43,7 +43,7 @@ ALLOWED: dict[JobStatus, frozenset[JobStatus]] = {
     ),
 }
 
-CLAIMABLE = (JobStatus.PENDING, JobStatus.FAILED)
+CLAIMABLE = (JobStatus.PENDING)
 
 TERMINAL = frozenset(
     {

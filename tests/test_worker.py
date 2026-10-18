@@ -46,3 +46,37 @@ def test_execute_job_retries_after_failure():
     assert result == "processed"
     assert attempts == 2
     assert job.status == JobStatus.COMPLETED
+
+def test_job_die_after_max_attempts():
+    job = Job(id="job-004", task_name="process_file", max_attempts=3)
+    attempts = 0
+
+    def task():
+        nonlocal attempts
+        attempts += 1
+        raise RuntimeError("Processing failed")
+    with pytest.raises(RuntimeError, match="Processing failed"):
+        execute_job(job,task)
+    assert attempts == 3
+    assert job.retries == 3
+    assert job.status == JobStatus.DEAD
+
+def test_max_attempts_zero_is_rejected():
+    with pytest.raises(ValueError):
+        Job(id="job-005", task_name="process_file", max_attempts=0)
+
+def test_max_attempts_one_dies_on_first_failure():
+    job = Job(id="job-006", task_name="process_file", max_attempts=1)
+    attempts = 0
+
+    def task():
+        nonlocal attempts
+        attempts += 1
+        raise RuntimeError("Processing failed")
+
+    with pytest.raises(RuntimeError, match="Processing failed"):
+        execute_job(job, task)
+
+    assert attempts == 1
+    assert job.retries == 1
+    assert job.status == JobStatus.DEAD        
