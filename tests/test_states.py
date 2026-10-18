@@ -3,6 +3,7 @@ import pytest
 from taskflow.errors import InvalidTransition, TaskFlowError
 from taskflow.states import (
     ALLOWED,
+    CLAIMABLE,
     JobStatus,
     assert_transition,
     can_transition,
@@ -91,3 +92,6 @@ def test_allowed_transitions_are_correct():
 
     for status, expected_next_states in expected.items():
         assert ALLOWED[status] == expected_next_states
+
+def test_only_pending_jobs_are_claimable():
+    assert CLAIMABLE == (JobStatus.PENDING,)

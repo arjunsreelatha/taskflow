@@ -50,7 +50,7 @@ def test_execute_job_retries_after_failure():
 
 
 def test_job_die_after_max_attempts():
-    job = Job(id="job-004", task_name="process_file", max_attempts=3)
+    job = Job(id="job-004", task_name="process_file", max_attempts=2)
     attempts = 0
 
     def task():
@@ -60,8 +60,8 @@ def test_job_die_after_max_attempts():
 
     with pytest.raises(RuntimeError, match="Processing failed"):
         execute_job(job, task)
-    assert attempts == 3
-    assert job.retries == 3
+    assert attempts == 2
+    assert job.retries == 2
     assert job.status == JobStatus.DEAD
 
 
@@ -100,4 +100,39 @@ def test_permanent_error_skips_retries():
         execute_job(job, task)
 
     assert attempts == 1
+    assert job.status == JobStatus.DEAD
+
+def test_permanent_error_does_not_retry():
+    job = Job(id="job-008", task_name="process_file", max_attempts=3)
+    attempts = 0
+
+    def task():
+        nonlocal attempts
+        attempts += 1
+        raise PermanentError("bad input")
+
+    with pytest.raises(PermanentError):
+        execute_job(job, task)
+
+    assert attempts == 1
+    assert job.status == JobStatus.DEAD
+
+def test_permanent_error_after_retry():
+    job = Job(id="job-009", task_name="process_file", max_attempts=3)
+    attempts = 0
+
+    def task():
+        nonlocal attempts
+        attempts += 1
+
+        if attempts == 1:
+            raise RuntimeError("temporary failure")
+
+        raise PermanentError("bad input")
+
+    with pytest.raises(PermanentError, match="bad input"):
+        execute_job(job, task)
+
+    assert attempts == 2
+    assert job.retries == 2
     assert job.status == JobStatus.DEAD

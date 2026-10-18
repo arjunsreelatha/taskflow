@@ -9,7 +9,7 @@ T = TypeVar("T")
 
 
 def execute_job(job: Job, task: Callable[[], T]) -> T:
-    """Execute a task and retry up to two times."""
+    """Execute a task with a configurable maximum number of attempts."""
     max_attempts = job.max_attempts
 
     for attempt in range(max_attempts):
@@ -34,4 +34,4 @@ def execute_job(job: Job, task: Callable[[], T]) -> T:
             job.transition_to(JobStatus.COMPLETED)
             return result
 
-    raise RuntimeError("Task failed after maximum retries")
+    
