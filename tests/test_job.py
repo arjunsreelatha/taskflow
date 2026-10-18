@@ -1,6 +1,7 @@
+import json
+
 import pytest
 from pydantic import ValidationError
-import json
 
 from taskflow.errors import InvalidTransition
 from taskflow.job import Job, create_job
@@ -8,13 +9,10 @@ from taskflow.states import JobStatus
 
 
 def test_create_job():
-    job_id = "job-001"
-    task = "send_email"
+    job = create_job("job-001", "send_email")
 
-    job = create_job(job_id, task)
-
-    assert job.id == job_id
-    assert job.task_name == task
+    assert job.id == "job-001"
+    assert job.task_name == "send_email"
     assert job.status == JobStatus.PENDING
     assert job.retries == 0
 
@@ -24,21 +22,17 @@ def test_create_job_rejects_empty_task_name():
         create_job("job-002", "")
 
 
-def test_Job_rejects_empty_id():
+def test_job_rejects_empty_id():
     with pytest.raises(ValidationError):
         Job(id="", task_name="send_email")
 
 
-def test_Job_rejects_negative_retries():
+def test_job_rejects_negative_retries():
     with pytest.raises(ValidationError):
-        Job(
-            id="job-003",
-            task_name="send_email",
-            retries=-1,
-        )
+        Job(id="job-003", task_name="send_email", retries=-1)
 
 
-def test_Job_rejects_whitespace_only_task_name():
+def test_job_rejects_whitespace_only_task_name():
     with pytest.raises(ValidationError):
         Job(id="job-004", task_name="   ")
 
@@ -69,9 +63,14 @@ def test_direct_status_assignment_rejected():
         job.status = JobStatus.COMPLETED
 
 
-def test_job_serlializes_to_json():
-    job = Job(id="job-001", task_name="send_email")
+def test_increase_retries():
+    job = Job(id="1", task_name="send_email")
+    job.increase_retries()
+    assert job.retries == 1
 
+
+def test_job_serializes_to_json():
+    job = Job(id="job-001", task_name="send_email")
     data = json.loads(job.model_dump_json())
 
     assert data == {
@@ -84,7 +83,6 @@ def test_job_serlializes_to_json():
 
 def test_job_json_round_trip_preserves_enum():
     job = Job(id="job-001", task_name="send_email")
-
     restored = Job.model_validate_json(job.model_dump_json())
 
     assert restored == job
