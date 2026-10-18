@@ -1,4 +1,3 @@
-
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from taskflow.states import JobStatus, assert_transition
@@ -22,9 +21,7 @@ class Job(BaseModel):
 
     def __setattr__(self, name: str, value) -> None:
         if name == "status" and "status" in self.__dict__:
-            new_status = (
-                value if isinstance(value, JobStatus) else JobStatus(value)
-            )
+            new_status = value if isinstance(value, JobStatus) else JobStatus(value)
             assert_transition(self.status, new_status)
             value = new_status
 
@@ -33,8 +30,10 @@ class Job(BaseModel):
     def transition_to(self, new_status: JobStatus) -> None:
         assert_transition(self.status, new_status)
         self.status = new_status
-    def increase_retires(self)->None:
+
+    def increase_retires(self) -> None:
         self.retries += 1
+
 
 def create_job(job_id: str, task_name: str) -> Job:
     return Job(id=job_id, task_name=task_name)

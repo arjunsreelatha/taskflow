@@ -48,7 +48,7 @@ def test_all_allowed_transitions():
         (JobStatus.RUNNING, JobStatus.FAILED),
         (JobStatus.RUNNING, JobStatus.DEAD),
         (JobStatus.RUNNING, JobStatus.CANCELLED),
-        (JobStatus.FAILED, JobStatus.RUNNING),
+        (JobStatus.FAILED, JobStatus.PENDING),
         (JobStatus.FAILED, JobStatus.CANCELLED),
         (JobStatus.DEAD, JobStatus.PENDING),
     ]
@@ -85,7 +85,7 @@ def test_allowed_transitions_are_correct():
             JobStatus.DEAD,
             JobStatus.CANCELLED,
         },
-        JobStatus.FAILED: {JobStatus.RUNNING, JobStatus.CANCELLED},
+        JobStatus.FAILED: {JobStatus.PENDING, JobStatus.CANCELLED, JobStatus.DEAD},
         JobStatus.COMPLETED: set(),
         JobStatus.CANCELLED: set(),
         JobStatus.DEAD: {JobStatus.PENDING},

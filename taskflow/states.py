@@ -17,7 +17,9 @@ ALLOWED: dict[JobStatus, frozenset[JobStatus]] = {
     JobStatus.RUNNING: frozenset(
         {JobStatus.COMPLETED, JobStatus.FAILED, JobStatus.DEAD, JobStatus.CANCELLED}
     ),
-    JobStatus.FAILED: frozenset({JobStatus.RUNNING, JobStatus.CANCELLED}),
+    JobStatus.FAILED: frozenset(
+        {JobStatus.PENDING, JobStatus.CANCELLED, JobStatus.DEAD}
+    ),
     JobStatus.COMPLETED: frozenset(),
     JobStatus.CANCELLED: frozenset(),
     JobStatus.DEAD: frozenset({JobStatus.PENDING}),
