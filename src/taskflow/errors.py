@@ -15,3 +15,7 @@ class InvalidTransition(TaskFlowError):
 
 class IdempotencyConflict(TaskFlowError):
     """an idempotency key was reused with a  different request body"""
+
+
+class PermanentError(TaskFlowError):
+    """An error indicating that the job has failed permanently and should not be retried."""

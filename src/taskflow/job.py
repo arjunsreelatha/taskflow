@@ -11,6 +11,7 @@ class Job(BaseModel):
     status: JobStatus = Field(default=JobStatus.PENDING)
     retries: int = Field(default=0, ge=0)
     max_attempts: int = Field(default=3, ge=1)
+
     @field_validator("task_name")
     @classmethod
     def validate_task_name(cls, value: str) -> str:

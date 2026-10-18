@@ -1,6 +1,7 @@
 from collections.abc import Callable
 from typing import TypeVar
 
+from taskflow.errors import PermanentError
 from taskflow.job import Job
 from taskflow.states import JobStatus
 
@@ -16,6 +17,10 @@ def execute_job(job: Job, task: Callable[[], T]) -> T:
 
         try:
             result = task()
+        except PermanentError:
+            job.increase_retries()
+            job.transition_to(JobStatus.DEAD)
+            raise
         except Exception:
             job.increase_retries()
             job.transition_to(JobStatus.FAILED)
