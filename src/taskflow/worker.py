@@ -1,14 +1,14 @@
-from collections.abc import Callable
 from typing import TypeVar
 
 from taskflow.errors import PermanentError
 from taskflow.job import Job
 from taskflow.states import JobStatus
+from taskflow.tasks import get_task
 
 T = TypeVar("T")
 
 
-def execute_job(job: Job, task: Callable[[], T]) -> T:
+def execute_job(job: Job) -> T:
     """Execute a task with a configurable maximum number of attempts."""
     max_attempts = job.max_attempts
 
@@ -16,7 +16,8 @@ def execute_job(job: Job, task: Callable[[], T]) -> T:
         job.transition_to(JobStatus.RUNNING)
 
         try:
-            result = task()
+            handler = get_task(job.task_name)
+            result = handler()
         except PermanentError:
             job.increase_retries()
             job.transition_to(JobStatus.DEAD)
