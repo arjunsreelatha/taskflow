@@ -17,7 +17,7 @@ def execute_job(job: Job, task: Callable[[], T]) -> T:
         try:
             result = task()
         except Exception:
-            job.increase_retires()
+            job.increase_retries()
             job.transition_to(JobStatus.FAILED)
 
             if attempt == max_attempts - 1:
