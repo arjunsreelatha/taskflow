@@ -19,3 +19,11 @@ class IdempotencyConflict(TaskFlowError):
 
 class PermanentError(TaskFlowError):
     """An error indicating that the job has failed permanently and should not be retried."""
+
+class UnknownTask(TaskFlowError):
+    """An error indicating that the requested task is unknown."""
+    pass
+
+class DuplicateTask(TaskFlowError):
+    """An error indicating that a task with the same ID already exists."""
+    pass
