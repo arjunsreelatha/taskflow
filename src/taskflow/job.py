@@ -4,8 +4,6 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .states import JobStatus, assert_transition
 
-payload: dict[str, Any] = Field(default_factory=dict)
-
 
 class Job(BaseModel):
     model_config = ConfigDict(validate_assignment=True)

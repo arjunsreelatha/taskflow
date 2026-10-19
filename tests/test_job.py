@@ -27,6 +27,16 @@ def test_job_rejects_empty_id():
         Job(id="", task_name="send_email")
 
 
+def test_job_rejects_non_dict_payload():
+    with pytest.raises(ValidationError):
+        Job(id="job-004", task_name="send_email", payload="text")
+
+
+def test_job_rejects_none_payload():
+    with pytest.raises(ValidationError):
+        Job(id="job-005", task_name="send_email", payload=None)
+
+
 def test_job_rejects_negative_retries():
     with pytest.raises(ValidationError):
         Job(id="job-003", task_name="send_email", retries=-1)

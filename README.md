@@ -50,7 +50,7 @@ def send_email(payload):
 
 job = create_job("job-001", "send_email", payload={"recipient": "user@example.com"})
 print(execute_job(job))  # "sent to user@example.com"
-print(job.status)        # completed
+print(job.status)  # completed
 ```
 
 Payload rules:
