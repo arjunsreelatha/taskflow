@@ -1,20 +1,17 @@
-from typing import TypeVar
+from typing import Any
 
 from taskflow.errors import PermanentError
 from taskflow.job import Job
 from taskflow.states import JobStatus
 from taskflow.tasks import get_task
 
-T = TypeVar("T")
 
-
-def execute_job(job: Job) -> T:
+def execute_job(job: Job) -> Any:
     """Execute a task with a configurable maximum number of attempts."""
     max_attempts = job.max_attempts
 
     for attempt in range(max_attempts):
         job.transition_to(JobStatus.RUNNING)
-
         try:
             handler = get_task(job.task_name)
             result = handler()

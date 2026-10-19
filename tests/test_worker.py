@@ -138,3 +138,12 @@ def test_permanent_error_after_retry():
     assert attempts == 2
     assert job.retries == 2
     assert job.status == JobStatus.DEAD
+
+
+def test_execute_job_unknown_task():
+    job = Job(id="job-008", task_name="unknown_task", max_attempts=3)
+
+    with pytest.raises(PermanentError, match="not registered"):
+        execute_job(job)
+    assert job.retries == 1
+    assert job.status == JobStatus.DEAD
