@@ -147,3 +147,24 @@ def test_execute_job_unknown_task():
         execute_job(job)
     assert job.retries == 1
     assert job.status == JobStatus.DEAD
+
+
+def test_execute_job_passes_payload_to_handler():
+    payload = {"recipient": "user@example.com"}
+    job = Job(
+        id="job-104",
+        task_name="send_email",
+        payload=payload,
+    )
+    received_payload = {}
+
+    @task("send_email")
+    def send_email(task_payload):
+        received_payload.update(task_payload)
+        return "Email sent"
+
+    result = execute_job(job)
+
+    assert result == "Email sent"
+    assert received_payload == payload
+    assert job.status == JobStatus.COMPLETED

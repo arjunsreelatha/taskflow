@@ -1,141 +1,108 @@
 # TaskFlow
 
-TaskFlow is a Python-based task queue project focused on reliable background job execution, task registration, job state management, and failure handling.
+TaskFlow is a Python task queue built step by step to learn how background jobs are validated, executed, retried and tracked reliably. It is a work in progress: the core job lifecycle runs in memory today, and persistence, concurrency and an API are planned.
 
-The project is developed incrementally, emphasizing clean code, type safety, and automated testing.
+## What works today
 
-## Features
+- **Jobs:** a validated `Job` model (id, task name, status, retry count, `max_attempts`) with JSON serialization.
+- **State machine:** six statuses with enforced transitions. Invalid changes raise `InvalidTransition`, including direct assignment to `job.status`.
+- **Task registry:** register handlers by name with the `@task("name")` decorator and look them up with `get_task`.
+- **Worker:** `execute_job(job)` finds the job's handler, runs it, and retries failures up to `max_attempts`.
+- **Failure handling:** `PermanentError` and `UnknownTask` skip retries and send the job straight to `DEAD`.
+- **Tests and tooling:** pytest suite, with Ruff for linting and formatting.
 
-- **Job management:** Create jobs with unique IDs, task names, statuses, and configurable retry limits.
-- **State management:** Enforce valid job state transitions using Python enums.
-- **Task registry:** Register task handlers by name and retrieve them for execution.
-- **Worker execution:** Execute registered task handlers through `execute_job`.
-- **Automatic retries:** Retry failed tasks up to the configured `max_attempts`.
-- **Permanent errors:** Use `PermanentError` for failures that should not be retried.
-- **Unknown task handling:** Treat unregistered tasks as permanent failures using `UnknownTask`.
-- **Duplicate task detection:** Use `DuplicateTask` for duplicate task registrations.
-- **Automated testing:** Validate functionality and error handling with pytest.
-- **Code quality:** Use Ruff for formatting and linting.
+## Job lifecycle
 
-## Job States
-
-TaskFlow defines six job statuses:
-
-| Status | Description |
+| Status | Meaning |
 |---|---|
-| `PENDING` | Waiting to be executed. |
-| `RUNNING` | Currently being executed. |
-| `COMPLETED` | Executed successfully. |
-| `FAILED` | An execution attempt failed, and another attempt may be made. |
-| `DEAD` | Execution stopped because attempts were exhausted or a permanent error occurred. |
-| `CANCELLED` | The job was cancelled. |
+| `PENDING` | Waiting to run |
+| `RUNNING` | Being executed |
+| `COMPLETED` | Finished successfully |
+| `FAILED` | An attempt failed; the job will retry or die |
+| `DEAD` | Attempts exhausted, or a permanent error occurred |
+| `CANCELLED` | Cancelled |
 
-The state machine validates transitions to prevent invalid job state changes.
-
-## Error Handling and Retries
-
-TaskFlow distinguishes between recoverable execution failures and permanent failures.
-
-- **Recoverable errors:** The worker retries the task until it succeeds or reaches `max_attempts`.
-- **Permanent errors:** The worker transitions the job to `DEAD` without retrying.
-- **Unknown tasks:** If a task name is not registered, the worker treats it as a permanent error.
-- **Retry tracking:** Failed attempts are recorded through the job's retry counter.
-
-The `max_attempts` setting controls the maximum number of execution attempts for a job.
-
-## Project Structure
+Allowed transitions:
 
 ```text
-taskflow/
-├── __init__.py
-├── errors.py
-├── job.py
-├── states.py
-├── tasks.py
-└── worker.py
-
-tests/
-├── test_job.py
-├── test_states.py
-├── test_tasks.py
-└── test_worker.py
+PENDING -> RUNNING, CANCELLED
+RUNNING -> COMPLETED, FAILED, DEAD, CANCELLED
+FAILED  -> PENDING (retry), DEAD, CANCELLED
+DEAD    -> PENDING (manual requeue)
+COMPLETED, CANCELLED: terminal
 ```
 
-The exact files may evolve as the project develops.
+## Usage
 
-## Requirements
+Register a handler, create a job with the same task name, and execute it:
 
-- Python 3.11 or newer
-- pytest
-- Ruff
+```python
+from taskflow.job import create_job
+from taskflow.tasks import task
+from taskflow.worker import execute_job
 
-Python 3.11 or newer is required because the project uses `enum.StrEnum`.
 
-## Setup
+@task("send_email")
+def send_email():
+    return "sent"
 
-Clone the repository:
+
+job = create_job("job-001", "send_email")
+print(execute_job(job))  # "sent"
+print(job.status)        # completed
+```
+
+Failure rules:
+
+- Any normal exception is retried until `max_attempts` is reached, then the job is `DEAD` and the exception is re-raised.
+- Raise `PermanentError` in a handler to fail without retrying.
+- A job whose `task_name` is not registered fails permanently with `UnknownTask`.
+- Registering two handlers under the same name raises `DuplicateTask`.
+
+## Project structure
+
+```text
+src/taskflow/
+    errors.py     domain exceptions
+    states.py     JobStatus and allowed transitions
+    job.py        Job model and create_job
+    tasks.py      @task decorator and registry
+    handlers.py   built-in example handler
+    worker.py     execute_job (retry logic)
+tests/
+    test_states.py  test_job.py  test_tasks.py
+    test_handlers.py  test_worker.py
+```
+
+## Getting started
+
+Requires Python 3.11 or newer.
 
 ```bash
 git clone https://github.com/arjunsreelatha/taskflow.git
 cd taskflow
-```
-
-Create and activate a virtual environment.
-
-**Windows PowerShell:**
-
-```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+source .venv/bin/activate        # Windows PowerShell: .\.venv\Scripts\Activate.ps1
+pip install -e ".[dev]"
 ```
 
-Install the development tools:
+Run the checks before committing:
 
 ```bash
-python -m pip install pytest ruff
-```
-
-If the project defines its dependencies in `pyproject.toml`, install the project and its development dependencies according to that configuration.
-
-## Running Tests
-
-Run the complete test suite:
-
-```bash
-python -m pytest -q
-```
-
-Run a specific test module:
-
-```bash
-python -m pytest tests/test_worker.py -v
-```
-
-## Code Quality
-
-Format the code:
-
-```bash
+pytest -q
+ruff check .
 ruff format .
 ```
 
-Check for linting issues:
+## Roadmap
 
-```bash
-ruff check .
-```
-
-Before committing changes, run formatting, linting, and the full test suite.
-
-## Development Goals
-
-- Build a reliable background task queue.
-- Improve task registration and handler execution.
-- Strengthen job validation and state transitions.
-- Implement robust retry and permanent-failure handling.
-- Expand automated test coverage.
-- Introduce persistence and deployment capabilities incrementally.
-
-## Project Status
-
-TaskFlow is an ongoing learning and software engineering project. Current development focuses on job lifecycle management, task registry integration, worker execution, retry policies, and test-driven development.
+- [x] Job states, validation and transitions
+- [x] Retries, `max_attempts`, permanent errors
+- [x] Task registry
+- [ ] Handler payloads (pass job data to handlers)
+- [ ] Run handlers in a child process with timeouts
+- [ ] REST API (FastAPI)
+- [ ] PostgreSQL persistence and migrations
+- [ ] Safe job claiming for multiple workers
+- [ ] Retry backoff and idempotency keys
+- [ ] Docker, CI and deployment

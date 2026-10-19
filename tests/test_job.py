@@ -89,3 +89,19 @@ def test_job_json_round_trip_preserves_enum():
     assert restored == job
     assert restored.status is JobStatus.PENDING
     assert isinstance(restored.status, JobStatus)
+
+def test_job_has_independent_payload_per_job():
+    first = Job(id="job-101", task_name="send_email")
+    second = Job(id="job-101", task_name="send_email")
+
+    first.payload["recipient"] = "user@example.com"
+
+    assert first.payload == {"recipient":"user@example.com"}
+    assert second.payload =={}
+
+    def test_create_job_accepts_payload():
+    payload = {"recipient": "user@example.com", "urgent": True}
+
+    job = create_job("job-103", "send_email", payload=payload)
+
+    assert job.payload == payload
