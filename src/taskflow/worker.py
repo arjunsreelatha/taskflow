@@ -14,7 +14,7 @@ def execute_job(job: Job) -> Any:
         job.transition_to(JobStatus.RUNNING)
         try:
             handler = get_task(job.task_name)
-            result = handler()
+            result = handler(job.payload)
         except PermanentError:
             job.increase_retries()
             job.transition_to(JobStatus.DEAD)

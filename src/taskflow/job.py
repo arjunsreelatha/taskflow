@@ -1,6 +1,10 @@
+from typing import Any
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from .states import JobStatus, assert_transition
+
+payload: dict[str, Any] = Field(default_factory=dict)
 
 
 class Job(BaseModel):
@@ -11,6 +15,7 @@ class Job(BaseModel):
     status: JobStatus = Field(default=JobStatus.PENDING)
     retries: int = Field(default=0, ge=0)
     max_attempts: int = Field(default=3, ge=1)
+    payload: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("task_name")
     @classmethod
@@ -36,5 +41,9 @@ class Job(BaseModel):
         self.retries += 1
 
 
-def create_job(job_id: str, task_name: str) -> Job:
-    return Job(id=job_id, task_name=task_name)
+def create_job(job_id: str, task_name: str, payload: dict[str, Any] | None = None) -> Job:
+    return Job(
+        id=job_id,
+        task_name=task_name,
+        payload=payload if payload is not None else {},
+    )

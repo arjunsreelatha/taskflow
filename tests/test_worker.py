@@ -19,7 +19,7 @@ def test_execute_job_success():
     job = Job(id="job-001", task_name="send_email")
 
     @task("send_email")
-    def send_email():
+    def send_email(payload):
         return "Email sent"
 
     result = execute_job(job)
@@ -32,7 +32,7 @@ def test_execute_job_failure():
     job = Job(id="job-002", task_name="process_file")
 
     @task("process_file")
-    def process_file():
+    def process_file(payload):
         raise RuntimeError("Processing failed")
 
     with pytest.raises(RuntimeError, match="Processing failed"):
@@ -46,7 +46,7 @@ def test_execute_job_retries_after_failure():
     attempts = 0
 
     @task("send_email")
-    def send_email():
+    def send_email(payload):
         nonlocal attempts
         attempts += 1
 
@@ -66,7 +66,7 @@ def test_job_die_after_max_attempts():
     attempts = 0
 
     @task("process_file")
-    def process_file():
+    def process_file(payload):
         nonlocal attempts
         attempts += 1
         raise RuntimeError("Processing failed")
@@ -88,7 +88,7 @@ def test_max_attempts_one_dies_on_first_failure():
     attempts = 0
 
     @task("process_file")
-    def process_file():
+    def process_file(payload):
         nonlocal attempts
         attempts += 1
         raise RuntimeError("Processing failed")
@@ -106,7 +106,7 @@ def test_permanent_error_skips_retries():
     attempts = 0
 
     @task("process_file")
-    def process_file():
+    def process_file(payload):
         nonlocal attempts
         attempts += 1
         raise PermanentError("bad input")
@@ -123,7 +123,7 @@ def test_permanent_error_after_retry():
     attempts = 0
 
     @task("process_file")
-    def process_file():
+    def process_file(payload):
         nonlocal attempts
         attempts += 1
 

@@ -39,8 +39,8 @@ def test_duplicate_task_registration():
 
 def test_decorated_functions_works_directly():
     @task("sample")
-    def sample_task():
+    def sample_task(payload):
         return "success"
 
     assert get_task("sample") is sample_task
-    assert sample_task() == "success"
+    assert sample_task({}) == "success"
