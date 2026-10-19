@@ -37,7 +37,7 @@ def test_duplicate_task_registration():
         task("sample")(sample_task)
 
 
-def test_decorated_functions_works_driectly():
+def test_decorated_functions_works_directly():
     @task("sample")
     def sample_task():
         return "success"
