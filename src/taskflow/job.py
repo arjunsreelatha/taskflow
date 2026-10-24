@@ -14,6 +14,8 @@ class Job(BaseModel):
     retries: int = Field(default=0, ge=0)
     max_attempts: int = Field(default=3, ge=1)
     payload: dict[str, Any] = Field(default_factory=dict)
+    result: dict[str, Any] | None = None
+    last_error: str | None = None
 
     @field_validator("task_name")
     @classmethod

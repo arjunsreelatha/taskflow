@@ -90,6 +90,8 @@ def test_job_serializes_to_json():
         "retries": 0,
         "max_attempts": 3,
         "payload": {},
+        "result": None,
+        "last_error": None,
     }
 
 
