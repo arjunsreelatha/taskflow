@@ -7,7 +7,13 @@ name = "taskflow"
 version = "0.1.0"
 description = "A Python job-processing and task queue system"
 requires-python = ">=3.11"
-dependencies = ["pydantic>=2.6"]
+dependencies = [
+    "pydantic>=2.6",
+    "pydantic-settings>=2.2",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "psycopg2-binary>=2.9",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.4"]
@@ -18,6 +24,9 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "integration: needs a real PostgreSQL",
+]
 
 [tool.ruff]
 line-length = 100
