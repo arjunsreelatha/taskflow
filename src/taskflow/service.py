@@ -249,3 +249,59 @@ def fail_job(
     session.commit()
     session.refresh(job)
     return job
+
+
+def recover_expired_leases(
+    session: Session,
+    *,
+    now: datetime | None = None,
+) -> int:
+    """
+    Find running jobs whose lease has expired and make them claimable again.
+
+    Returns the number of jobs recovered.
+    """
+    now = now or utcnow()
+    stmt = (
+        select(Job)
+        .where(
+            Job.status == JobStatus.RUNNING.value,
+            Job.lease_expires_at.is_not(None),
+            Job.lease_expires_at < now,
+        )
+        .with_for_update(skip_locked=True)
+    )
+    jobs = list(session.scalars(stmt).all())
+    recovered = 0
+
+    for job in jobs:
+        error = f"lease expired (was locked by {job.locked_by})"
+        job.last_error = error
+        job.locked_by = None
+        job.lease_expires_at = None
+
+        # Close the open attempt
+        attempt = session.scalars(
+            select(JobAttempt).where(
+                JobAttempt.job_id == job.id,
+                JobAttempt.attempt_number == job.attempts,
+            )
+        ).first()
+        if attempt is not None and attempt.finished_at is None:
+            attempt.finished_at = now
+            attempt.outcome = "lease_expired"
+            attempt.error = error
+
+        if job.attempts >= job.max_attempts:
+            job.finished_at = now
+            _transition(session, job, JobStatus.DEAD, now, error)
+        else:
+            # Retry soon
+            job.run_at = now
+            _transition(session, job, JobStatus.FAILED, now, error)
+
+        recovered += 1
+
+    if recovered:
+        session.commit()
+    return recovered
